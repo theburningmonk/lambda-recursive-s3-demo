@@ -1,0 +1,32 @@
+service: lambda-recursive-s3-demo
+
+provider:
+  name: aws
+  runtime: nodejs6.10
+  versionFunctions: false
+
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action: 
+        - 's3:GetObject'
+      Resource: 'arn:aws:s3:::demo-expensive-tasks/*'
+    - Effect: 'Allow'
+      Action: 
+        - 'lambda:InvokeFunction'
+      Resource: 
+        Fn::Join:
+          - ''
+          - - 'arn:aws:lambda:us-east-1:'
+            - Ref: AWS::AccountId
+            - ':function:lambda-recursive-s3-demo-dev-batch-processor'
+
+functions:
+  batch-processor:
+    handler: batch-processor.handler
+    timeout: 60
+    events:
+      - s3:
+          bucket: demo-expensive-tasks
+          event: s3:ObjectCreated:*
+          rules:
+            - suffix: .json

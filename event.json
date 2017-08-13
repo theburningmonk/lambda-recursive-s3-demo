@@ -1,0 +1,38 @@
+{
+    "Records": [
+        {
+            "eventVersion": "2.0",
+            "eventSource": "aws:s3",
+            "awsRegion": "us-east-1",
+            "eventTime": "2017-08-13T20:29:54.442Z",
+            "eventName": "ObjectCreated:Put",
+            "userIdentity": {
+                "principalId": "AWS:AIDAIP5G4Z37ZNNNKVEUW"
+            },
+            "requestParameters": {
+                "sourceIPAddress": "88.98.200.234"
+            },
+            "responseElements": {
+                "x-amz-request-id": "A9D177E627B4C43F",
+                "x-amz-id-2": "U0Y6znYrShyS+ommNdTubGFIXa0Q2sv36sjLrtpEcwdLmg6nI2R0AZ1Xhc20WkIiAQPLd1gEeCU="
+            },
+            "s3": {
+                "s3SchemaVersion": "1.0",
+                "configurationId": "30496a56-98a4-4bb8-adfe-a5ba017d0a66",
+                "bucket": {
+                    "name": "demo-expensive-tasks",
+                    "ownerIdentity": {
+                        "principalId": "A24TWZ4SD2JVO1"
+                    },
+                    "arn": "arn:aws:s3:::demo-expensive-tasks"
+                },
+                "object": {
+                    "key": "expensieve_tasks.json",
+                    "size": 1174,
+                    "eTag": "1512c7831f78a083760d4989e1eede56",
+                    "sequencer": "005990B6C265DBAB7C"
+                }
+            }
+        }
+    ]
+}
