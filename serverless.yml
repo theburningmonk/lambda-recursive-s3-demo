@@ -2,7 +2,7 @@ service: lambda-recursive-s3-demo
 
 provider:
   name: aws
-  runtime: nodejs6.10
+  runtime: nodejs8.10
   versionFunctions: false
 
   iamRoleStatements:

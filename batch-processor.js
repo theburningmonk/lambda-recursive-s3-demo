@@ -1,6 +1,3 @@
-'use strict';
-
-const co      = require('co');
 const _       = require('lodash');
 const AWS     = require('aws-sdk');
 const Promise = require('bluebird');
@@ -10,7 +7,7 @@ const s3      = new AWS.S3();
 // Data loaded from S3 and chached in case of recursion.
 let cached;
 
-let loadData = co.wrap(function* (bucket, key) {
+let loadData = async (bucket, key) => {
   try {
     console.log('Loading data from S3', { bucket, key });
 
@@ -19,7 +16,7 @@ let loadData = co.wrap(function* (bucket, key) {
       Key: key, 
       IfNoneMatch: _.get(cached, 'etag') 
     };
-    let resp = yield s3.getObject(req).promise();
+    let resp = await s3.getObject(req).promise();
 
     console.log('Caching data', { bucket, key, etag: resp.ETag });
     let data = JSON.parse(resp.Body);
@@ -33,9 +30,9 @@ let loadData = co.wrap(function* (bucket, key) {
       throw err;
     }
   }
-});
+};
 
-let recurse = co.wrap(function* (payload) {
+let recurse = async (payload) => {
   let req = {
     FunctionName: process.env.AWS_LAMBDA_FUNCTION_NAME,
     InvocationType: 'Event',
@@ -43,19 +40,19 @@ let recurse = co.wrap(function* (payload) {
   };
 
   console.log('Recursing...', req);
-  let resp = yield lambda.invoke(req).promise();
+  let resp = await lambda.invoke(req).promise();
   console.log('Invocation complete', resp);
 
   return resp;
-});
+};
 
-module.exports.handler = co.wrap(function* (event, context, callback) {
+module.exports.handler = async (event, context) => {
   console.log(JSON.stringify(event));
 
   let bucket   = _.get(event, 'Records[0].s3.bucket.name');
   let key      = _.get(event, 'Records[0].s3.object.key');
   let position = event.position || 0;
-  let data     = yield loadData(bucket, key);
+  let data     = await loadData(bucket, key);
 
   let totalTaskCount = data.tasks.length;
   let batchSize      = process.env.BATCH_SIZE || 5;
@@ -67,19 +64,19 @@ module.exports.handler = co.wrap(function* (event, context, callback) {
       position = position + batch.length;
       
       for (let task of batch) {
-        yield Promise.delay(1000); // each task takes a second to process
+        await Promise.delay(1000); // each task takes a second to process
       }
     } while (position < totalTaskCount && 
             context.getRemainingTimeInMillis() > 10000);
 
     if (position < totalTaskCount) {
       let newEvent = Object.assign(event, { position });
-      yield recurse(newEvent);
-      callback(null, `to be continued...[${position}]`);
+      await recurse(newEvent);
+      return `to be continued...[${position}]`;
     } else {
-      callback(null, "all done");
+      return "all done";
     }
   } catch (err) {
-    callback(err);
+    throw err;
   }
-});
+};
